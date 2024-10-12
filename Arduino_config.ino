@@ -1,47 +1,34 @@
-int CLK = 6;
-int LAT = 5;          
-int DATA = 4;       
+#include "Matrix2D.h"
 
+#define CLK_PIN 13
+#define LAT_PIN 12          
+#define DATA_PIN 11
+
+Matrix2D Matrix;
 
 void setup() {
-  pinMode(LAT, OUTPUT);
-  pinMode(CLK, OUTPUT);
-  pinMode(DATA, OUTPUT);
-  shiftOut(DATA, CLK, LSBFIRST, 0xFF);
-  //shiftOut(DATA, CLK, LSBFIRST, 0xFF);
-  //shiftOut(DATA, CLK, LSBFIRST, 0xFF);
-  digitalWrite(LAT, HIGH);
-  printf("start");
+
+  Serial.begin(9600);
+
+  Matrix.begin(DATA_PIN, LAT_PIN, CLK_PIN);
+
+  // pinMode(LAT, OUTPUT);
+  // pinMode(CLK, OUTPUT);
+  // pinMode(DATA, OUTPUT);
+  //shiftOut(DATA,CLK,LSBFIRST, cisla[7]);
+  //shiftOut(DATA,CLK,LSBFIRST, cisla[6]);
+  //shiftOut(DATA,CLK,LSBFIRST, cisla[5]);
+  //shiftOut(DATA,CLK,LSBFIRST, cisla[4]);
+  //shiftOut(DATA,CLK,LSBFIRST, cisla[3]);
+  //shiftOut(DATA,CLK,LSBFIRST, cisla[2]);
+  //shiftOut(DATA,CLK,LSBFIRST, cisla[1]);
+  //shiftOut(DATA,CLK,LSBFIRST, cisla[0]);
+  
 }
 
 
 void loop() {
-  //digitalWrite(LAT, LOW);
-  //shiftOut(DATA, CLK, LSBFIRST, 0xFF);        //Shift registr 3
-  //shiftOut(DATA, CLK, LSBFIRST, 0XAA);        //Shift registr 2
-  //shiftOut(DATA, CLK, LSBFIRST, 0xAA);        //Shift registr 1
-  //digitalWrite(LAT, HIGH);
 
-// //delay(1000);
-//   for (long i = 0; i<10000; i++){
-//   digitalWrite(LAT, LOW);
-// // shiftOut(DATA, CLK, LSBFIRST, 0XFE);        //Shift registr 8
-// // shiftOut(DATA, CLK, LSBFIRST, 0xAA);        //Shift registr 7
-// // shiftOut(DATA, CLK, LSBFIRST, 0xAA);        //Shift registr 6
-// // shiftOut(DATA, CLK, LSBFIRST, 0XFE);        //Shift registr 5
-// // shiftOut(DATA, CLK, LSBFIRST, 0xAA);        //Shift registr 4
-//   shiftOut(DATA, CLK, LSBFIRST, 0x00);        //Shift registr 3
-//   shiftOut(DATA, CLK, LSBFIRST, 0X00);        //Shift registr 2
-//   shiftOut(DATA, CLK, LSBFIRST, 0x00);        //Shift registr 1
-//   digitalWrite(LAT, HIGH);
-//   }
+  Matrix.display();
 
-//   digitalWrite(LAT, LOW);
-//   shiftOut(DATA, CLK, LSBFIRST, 0xFF);        //Shift registr 3
-//   shiftOut(DATA, CLK, LSBFIRST, 0XFF);        //Shift registr 2
-//   shiftOut(DATA, CLK, LSBFIRST, 0xFF);        //Shift registr 1
-//   digitalWrite(LAT, HIGH);
-
-//   delay(1000);
- }
-
+}
