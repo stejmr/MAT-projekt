@@ -8,9 +8,11 @@ Matrix2D Matrix;
 
 void setup() {
 
-  Serial.begin(9600);
+  Serial.begin(115200);
+  while(!Serial);
 
   Matrix.begin(DATA_PIN, LAT_PIN, CLK_PIN);
+  Serial.println("hello world");
 
   // pinMode(LAT, OUTPUT);
   // pinMode(CLK, OUTPUT);
@@ -30,5 +32,8 @@ void setup() {
 void loop() {
 
   Matrix.display();
+
+  //Serial.println("hello world");
+  //delay(1000);
 
 }
