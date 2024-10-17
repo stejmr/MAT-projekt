@@ -23,19 +23,7 @@ void setup() {
 
   while(!Serial);
 
-  WiFi.begin(ssid, password);
-  Serial.println("Connecting to WiFi");
-
-  while(WiFi.status() != WL_CONNECTED)
-  {
-    Serial.print(".");
-    delay(500);
-  }
-
-  Serial.print("\nConnected to: ");
-  Serial.print(ssid);
-  Serial.print("\nIP adress: ");
-  Serial.print(WiFi.localIP());
+  Connect_WiFi();  
 
   //Serial.println(doc.ErrorStr());
 
@@ -70,21 +58,34 @@ void setup() {
 
 
 void loop() {
+  delay(1000);
   if(WiFi.status() == WL_CONNECTED)
   {
-
+    //Serial.printf("Connected \n");
+    
   }
   else
   {
-
     Serial.println("Connection lost");
-    // WiFi.begin(ssid, password);
-    // if(WiFi.status() == WL_CONNECTED)
-    // {
-    //   Serial.println("Reconnected");
-    // }
-    // delay(1000);
+    Connect_WiFi();
   }
   //Matrix.display();
 
+}
+
+void Connect_WiFi()
+{
+  WiFi.begin(ssid, password);
+  Serial.println("Connecting to WiFi");
+
+  while(WiFi.status() != WL_CONNECTED)
+  {
+    Serial.print(".");
+    delay(500);
+  }
+
+  Serial.print("\nConnected to: ");
+  Serial.print(ssid);
+  Serial.print("\nIP adress: ");
+  Serial.print(WiFi.localIP());
 }
