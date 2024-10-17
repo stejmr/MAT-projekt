@@ -1,5 +1,10 @@
 #include <tinyxml2.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
 #include "Matrix2D.h"
+
+const char* ssid = "Ondys-iPhone";
+const char* password = "12345678";
 
 using namespace tinyxml2;
 
@@ -14,10 +19,25 @@ XMLDocument doc;
 
 void setup() {
 
-  Serial.begin(115200);
+  Serial.begin(9600);
+
   while(!Serial);
 
-  Serial.println(doc.ErrorStr());
+  WiFi.begin(ssid, password);
+  Serial.println("Connecting to WiFi");
+
+  while(WiFi.status() != WL_CONNECTED)
+  {
+    Serial.print(".");
+    delay(500);
+  }
+
+  Serial.print("\nConnected to: ");
+  Serial.print(ssid);
+  Serial.print("\nIP adress: ");
+  Serial.print(WiFi.localIP());
+
+  //Serial.println(doc.ErrorStr());
 
   //Serial.println("Serial complete");
 
@@ -50,7 +70,21 @@ void setup() {
 
 
 void loop() {
+  if(WiFi.status() == WL_CONNECTED)
+  {
 
+  }
+  else
+  {
+
+    Serial.println("Connection lost");
+    // WiFi.begin(ssid, password);
+    // if(WiFi.status() == WL_CONNECTED)
+    // {
+    //   Serial.println("Reconnected");
+    // }
+    // delay(1000);
+  }
   //Matrix.display();
 
 }
