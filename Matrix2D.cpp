@@ -89,7 +89,7 @@ void Matrix2D::begin(int DATA_PIN, int CLK_PIN, int LAT_PIN)
   pinMode(CLKPIN, OUTPUT);
   pinMode(LATPIN, OUTPUT);
 
-  Serial.println("Setup complete");
+  //Serial.println("Setup complete");
 }
 
 void Matrix2D::display(){

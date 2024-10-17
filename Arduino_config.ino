@@ -1,18 +1,38 @@
+#include <tinyxml2.h>
 #include "Matrix2D.h"
+
+using namespace tinyxml2;
+
+Matrix2D Matrix;
+XMLDocument doc;
 
 #define CLK_PIN 13
 #define LAT_PIN 12          
 #define DATA_PIN 11
 
-Matrix2D Matrix;
+//char* xml =;
 
 void setup() {
 
   Serial.begin(115200);
   while(!Serial);
 
+  Serial.println(doc.ErrorStr());
+
+  //Serial.println("Serial complete");
+
+  //doc.Parse( xml );
+
+  XMLElement* titleElement = doc.FirstChildElement( "SPEED" );
+  //char* speed = titleElement->GetText();
+
+  XMLElement* titleElement2 = doc.FirstChildElement( "DIRECTION" );
+  //char* direction = titleElement2->GetText();
+
+  //Serial.println(speed);
+  //Serial.println(direction);
+
   Matrix.begin(DATA_PIN, LAT_PIN, CLK_PIN);
-  Serial.println("hello world");
 
   // pinMode(LAT, OUTPUT);
   // pinMode(CLK, OUTPUT);
@@ -31,9 +51,6 @@ void setup() {
 
 void loop() {
 
-  Matrix.display();
-
-  //Serial.println("hello world");
-  //delay(1000);
+  //Matrix.display();
 
 }
