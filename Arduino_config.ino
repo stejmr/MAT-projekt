@@ -10,103 +10,73 @@ using namespace tinyxml2;
 
 Matrix2D Matrix;
 XMLDocument doc;
+HTTPClient http;
 
 #define CLK_PIN 13
 #define LAT_PIN 12
 #define DATA_PIN 11
 
-String RAWxml;
-
-//char* type_wind_speed;
-char* direction;
-
 void setup() {
 
   Serial.begin(9600);
-
-  while (!Serial)
-    ;
+  while (!Serial);
 
   Connect_WiFi();
 
+  Matrix.begin(DATA_PIN, LAT_PIN, CLK_PIN);
+
   //Serial.println(doc.ErrorStr());
-
-  //Serial.println("Serial complete");
-
-  // pinMode(LAT, OUTPUT);
-  // pinMode(CLK, OUTPUT);
-  // pinMode(DATA, OUTPUT);
-  //shiftOut(DATA,CLK,LSBFIRST, cisla[7]);
-  //shiftOut(DATA,CLK,LSBFIRST, cisla[6]);
-  //shiftOut(DATA,CLK,LSBFIRST, cisla[5]);
-  //shiftOut(DATA,CLK,LSBFIRST, cisla[4]);
-  //shiftOut(DATA,CLK,LSBFIRST, cisla[3]);
-  //shiftOut(DATA,CLK,LSBFIRST, cisla[2]);
-  //shiftOut(DATA,CLK,LSBFIRST, cisla[1]);
-  //shiftOut(DATA,CLK,LSBFIRST, cisla[0]);
 }
 
 
 void loop() {
+  String RAWxml;
   delay(1000);
-  if (WiFi.status() == WL_CONNECTED) {
-    //Serial.printf("Connected \n");
-    HTTPClient http;
-    http.begin("http://46.13.10.244:8005/xml.xml");
-    int statusCode = http.GET();
+  if (WiFi.status() == WL_CONNECTED) {                                //checks if WIFI is connected
+    http.begin("http://46.13.10.244:8005/xml.xml");                   //connects to meteostation
+    int statusCode = http.GET();                                      //gets status code from meteostation
 
-    if (statusCode > 0) {
-      String RAWxml = http.getString();
-      Serial.println("\nStatus:" + String(statusCode));
+    if (statusCode > 0) {                                             //checks if HTTP is comunicating
+      String RAWxml = http.getString();                               //gets XML data to string
+      Serial.println("\nStatus:" + String(statusCode));               //prints status code 
       //Serial.println(RAWxml);
 
-      doc.Parse(RAWxml.c_str());
+      doc.Parse(RAWxml.c_str());                                      //parses XML data converted to a char pointer
       //Serial.println("1");
-      XMLElement* SensorList = doc.FirstChildElement("wario")->FirstChildElement("input");
+      XMLElement* SensorList = doc.FirstChildElement("wario")->FirstChildElement("input");    //navigates in XML document
       //Serial.println("2");
-      for (tinyxml2::XMLElement* child = SensorList->FirstChildElement(); child != NULL; child = child->NextSiblingElement()) 
+      for (tinyxml2::XMLElement* child = SensorList->FirstChildElement(); child != NULL; child = child->NextSiblingElement())     // reads every sensor element of XML
       {
-        String type = child->FirstChildElement("type")->GetText();
-        if(type == "wind_direction" || type == "wind_speed")
+        String type = child->FirstChildElement("type")->GetText();        //navigates to type in every sensor
+        if(type == "wind_direction" || type == "wind_speed")              //filters by type
         {
-          Serial.println(child->FirstChildElement("value")->GetText());
+          Serial.println(child->FirstChildElement("value")->GetText());   //gets value from sensors and prints it
         }
-
       }
-      
-      //const char* wind_speed = SensorList->GetText();
-
-      //XMLElement* titleElement2 = doc.FirstChildElement( "value" );
-      //char* direction = titleElement2->GetText();
-
-      //Serial.println(wind_speed);
-      //Serial.println(direction);
-
-      Matrix.begin(DATA_PIN, LAT_PIN, CLK_PIN);
     } 
     else {
-      Serial.println("Http error");
+      Serial.println("Http error");                 //HTTP connection lost
     }
 
   } 
   else {
     Serial.println("Connection lost");
-    Connect_WiFi();
+    Connect_WiFi();                                 //reconects to wifi
   }
   //Matrix.display();
 }
 
 void Connect_WiFi() {
-  WiFi.begin(ssid, password);
+  WiFi.begin(ssid, password);                      //connects to WIFI
   Serial.println("Connecting to WiFi");
 
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED) {          //waiting for connection
     Serial.print(".");
     delay(500);
   }
 
   Serial.print("\nConnected to: ");
-  Serial.print(ssid);
+  Serial.print(ssid);                              //prints which WIFI it conected to
   Serial.print("\nIP adress: ");
-  Serial.print(WiFi.localIP());
+  Serial.print(WiFi.localIP());                    //prints its IP
 }
