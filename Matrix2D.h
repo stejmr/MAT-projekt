@@ -7,7 +7,7 @@ class Matrix2D {
 
     Matrix2D();
 
-    void begin(int DATA_PIN, int CLK_PIN, int LAT_PIN);
+    void begin(int DISPLAY_NUM, int DATA_PIN, int CLK_PIN, int LAT_PIN);
 
     void display();
 
@@ -16,5 +16,7 @@ class Matrix2D {
     int DATAPIN;
     int CLKPIN;
     int LATPIN;
+
+    int DISPLAY_NUM;
 };
 #endif

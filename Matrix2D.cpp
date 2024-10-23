@@ -2,6 +2,7 @@
 #include <Arduino.h>
 
 bool display_write = 0;
+int display_num = 0;
 
 char znaky[] = {
 
@@ -106,15 +107,17 @@ char znaky[] = {
 
 Matrix2D::Matrix2D(){};
 
-void Matrix2D::begin(int DATA_PIN, int CLK_PIN, int LAT_PIN)
+void Matrix2D::begin(int DISPLAY_NUM, int DATA_PIN, int CLK_PIN, int LAT_PIN)
 {
   Matrix2D::DATAPIN = DATA_PIN;
   Matrix2D::CLKPIN = CLK_PIN;
   Matrix2D::LATPIN = LAT_PIN;
 
+
   pinMode(DATAPIN, OUTPUT);
   pinMode(CLKPIN, OUTPUT);
   pinMode(LATPIN, OUTPUT);
+
 
   //Serial.println("Setup complete");
 }
@@ -123,7 +126,7 @@ void Matrix2D::display(){
   char number = 4;
   if (display_write == 0)
     {
-      for(int i = 7; i >= 0; i--)
+      for(int i = (DISPLAY_NUM * 8) - 1; i >= 0; i--)
   	  {
         shiftOut(DATAPIN,CLKPIN,LSBFIRST, znaky[i + number*8]);
         Serial.println(znaky[(7-i)+ number*8], BIN);

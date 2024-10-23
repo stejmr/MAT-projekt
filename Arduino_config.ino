@@ -23,7 +23,7 @@ void setup() {
 
   Connect_WiFi();
 
-  Matrix.begin(DATA_PIN, LAT_PIN, CLK_PIN);
+  Matrix.begin(1, DATA_PIN, LAT_PIN, CLK_PIN);
 
   //Serial.println(doc.ErrorStr());
 }
@@ -42,7 +42,7 @@ void loop() {
     int statusCode = http.GET();                                      //gets status code from meteostation
 
     if (statusCode > 0) 
-    {                                             //checks if HTTP is comunicating
+    {                                                                 //checks if HTTP is comunicating
       //String type;
       RAWxml = http.getString();                                      //gets XML data to string
       Serial.println("\nStatus:" + String(statusCode));               //prints status code 
