@@ -12,11 +12,13 @@ class Matrix2D {
     void display();
 
   private: 
+  
+    void displayChar(char znak);
 
     int DATAPIN;
     int CLKPIN;
     int LATPIN;
 
-    int DISPLAY_NUM;
+    int DISPLAYNUM;
 };
 #endif

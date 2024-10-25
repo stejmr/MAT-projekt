@@ -1,9 +1,6 @@
 #include "Matrix2D.h"
 #include <Arduino.h>
 
-bool display_write = 0;
-int display_num = 0;
-
 char znaky[] = {
 
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,         //space
@@ -33,7 +30,6 @@ char znaky[] = {
     0x7E, 0x66, 0x0C, 0x18, 0x18, 0x18, 0x18, 0x00,         //7
     0x3C, 0x66, 0x66, 0x3C, 0x66, 0x66, 0x3C, 0x00,         //8
     0x3C, 0x66, 0x66, 0x3E, 0x06, 0x66, 0x3C, 0x00,			    //9
-  	//0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 		    //debug
 
     0x00, 0x00, 0x18, 0x00, 0x00, 0x18, 0x00, 0x00,         //:
     0x00, 0x00, 0x18, 0x00, 0x00, 0x18, 0x18, 0x30,         //;
@@ -102,7 +98,8 @@ char znaky[] = {
     0x00, 0x00, 0x63, 0x6B, 0x7F, 0x36, 0x22, 0x00,         //w
     0x00, 0x00, 0x66, 0x3C, 0x18, 0x3C, 0x66, 0x00,         //x
     0x00, 0x00, 0x66, 0x66, 0x66, 0x3E, 0x06, 0x7C,         //y
-    0x00, 0x00, 0x7E, 0x0C, 0x18, 0x30, 0x7E, 0x00          //z
+    0x00, 0x00, 0x7E, 0x0C, 0x18, 0x30, 0x7E, 0x00,          //z
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 		    //debug
   };
 
 Matrix2D::Matrix2D(){};
@@ -112,6 +109,7 @@ void Matrix2D::begin(int DISPLAY_NUM, int DATA_PIN, int CLK_PIN, int LAT_PIN)
   Matrix2D::DATAPIN = DATA_PIN;
   Matrix2D::CLKPIN = CLK_PIN;
   Matrix2D::LATPIN = LAT_PIN;
+  Matrix2D::DISPLAYNUM = DISPLAY_NUM;
 
 
   pinMode(DATAPIN, OUTPUT);
@@ -122,16 +120,37 @@ void Matrix2D::begin(int DISPLAY_NUM, int DATA_PIN, int CLK_PIN, int LAT_PIN)
   //Serial.println("Setup complete");
 }
 
+void Matrix2D::displayChar(char znak) {
+  if (znak == 0) return;
+	znak = znak - 32;
+	//Serial.print(znak, DEC);
+    
+	for(int i = 7; i >= 0; i--)
+  	{
+   		shiftOut(DATAPIN,CLKPIN,LSBFIRST, znaky[i + znak*8]);
+   		//Serial.println(znaky[i+ znak*8], BIN);
+  	}
+}
+
 void Matrix2D::display(){
-  char number = 4;
-  if (display_write == 0)
-    {
-      for(int i = (DISPLAY_NUM * 8) - 1; i >= 0; i--)
-  	  {
-        shiftOut(DATAPIN,CLKPIN,LSBFIRST, znaky[i + number*8]);
-        Serial.println(znaky[(7-i)+ number*8], BIN);
-      }
-      digitalWrite(LATPIN, HIGH);
-      display_write = 1;
-    }
+  
+  char buffer[DISPLAYNUM];
+  // clear buffer
+  for (int i=0; i<DISPLAYNUM; i++) {
+  	buffer[i] = 32;
+  }
+  
+  // read data to display
+  int index = 0;
+  while (Serial.available() > 0 && index < DISPLAYNUM) {          //change this!!!
+    buffer[index++] = Serial.read();
+  }
+  
+  // display data
+  for (int i=5; i >=0; i--)
+  {
+    displayChar(buffer[i]);
+  }
+  digitalWrite(LATPIN, HIGH);
+  digitalWrite(LATPIN, LOW);
 }
