@@ -9,7 +9,7 @@ class Matrix2D {
 
     void begin(int DISPLAY_NUM, int DATA_PIN, int CLK_PIN, int LAT_PIN);
 
-    void display();
+    void display(String value_dir, String value_speed);
 
   private: 
   
@@ -18,6 +18,9 @@ class Matrix2D {
     int DATAPIN;
     int CLKPIN;
     int LATPIN;
+
+    String VALUE_DIR;
+    String VALUE_SPEED;
 
     int DISPLAYNUM;
 };

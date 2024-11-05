@@ -132,9 +132,12 @@ void Matrix2D::displayChar(char znak) {
   	}
 }
 
-void Matrix2D::display(){
+void Matrix2D::display(String value_dir, String value_speed){
+
+  Matrix2D::VALUE_DIR = value_dir;
+  Matrix2D::VALUE_SPEED = value_speed;
   
-  char buffer[DISPLAYNUM];
+  char buffer[10];
   // clear buffer
   for (int i=0; i<DISPLAYNUM; i++) {
   	buffer[i] = 32;
@@ -143,7 +146,7 @@ void Matrix2D::display(){
   // read data to display
   int index = 0;
   while (Serial.available() > 0 && index < DISPLAYNUM) {          //change this!!!
-    buffer[index++] = Serial.read();
+    buffer[index++] = Serial.read();                              //and this
   }
   
   // display data

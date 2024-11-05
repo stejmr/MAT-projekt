@@ -32,6 +32,8 @@ void setup() {
 void loop() {
   
   String RAWxml;
+  String value_dir_buffer;
+  String value_speed_buffer;
   String value_dir;
   String value_speed;
 
@@ -57,13 +59,33 @@ void loop() {
         String type = child->FirstChildElement("type")->GetText();             //navigates to type in every sensor and saves their data
         if(type == "wind_direction")                   //filters by type
         {
-          value_dir = child->FirstChildElement("value")->GetText();  //gets value from sensors and prints them
-          Serial.println(value_dir.toInt());                                //converts data to Int
+          value_dir_buffer = child->FirstChildElement("value")->GetText();  //gets value from sensors and prints them
+          //Serial.println(value_dir_buffer.toInt());                                //converts data to Int
         }
         if(type == "wind_speed")                   //filters by type
         {
-          value_speed = child->FirstChildElement("value")->GetText();  //gets value from sensors and prints them
-          Serial.println(value_speed.toInt());                                //converts data to Int
+          value_speed_buffer = child->FirstChildElement("value")->GetText();  //gets value from sensors and prints them
+          //Serial.println(value_speed_buffer.toInt());                                //converts data to Int
+
+          value_dir = String(value_dir_buffer.toInt());
+          value_speed = String(value_speed_buffer.toInt());
+
+          if (value_dir.length() == 1)
+          {
+            value_dir = "00" + value_dir;
+          }
+          if (value_dir.length() == 2)
+          {
+            value_dir = "0" + value_dir;
+          }
+          if (value_speed.length() == 1)
+          {
+            value_speed = "0" + value_speed;
+          }
+          
+          String value = value_dir + " " + value_speed;
+          
+          Serial.println(value);
         }
       }
     } 
