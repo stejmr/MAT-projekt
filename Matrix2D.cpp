@@ -1,6 +1,8 @@
 #include "Matrix2D.h"
 #include <Arduino.h>
 
+#define WAIT_US 100
+
 char znaky[] = {
 
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,         //space
@@ -104,17 +106,18 @@ char znaky[] = {
 
 Matrix2D::Matrix2D(){};
 
-void Matrix2D::begin(int DISPLAY_NUM, int DATA_PIN, int CLK_PIN, int LAT_PIN)
-{
+void Matrix2D::begin(int DISPLAY_NUM, int DATA_PIN, int CLK_PIN, int LAT_PIN, int RST_PIN){
   Matrix2D::DATAPIN = DATA_PIN;
   Matrix2D::CLKPIN = CLK_PIN;
   Matrix2D::LATPIN = LAT_PIN;
+  Matrix2D::RSTPIN = RST_PIN;
   Matrix2D::DISPLAYNUM = DISPLAY_NUM;
 
 
   pinMode(DATAPIN, OUTPUT);
   pinMode(CLKPIN, OUTPUT);
   pinMode(LATPIN, OUTPUT);
+  pinMode(RSTPIN, OUTPUT);
 
 
   //Serial.println("Setup complete");
@@ -123,19 +126,21 @@ void Matrix2D::begin(int DISPLAY_NUM, int DATA_PIN, int CLK_PIN, int LAT_PIN)
 void Matrix2D::displayChar(char znak) {
   if (znak == 0) return;
 	znak = znak - 32;
+  Serial.print(znak);
 	//Serial.print(znak, DEC);
     
 	for(int i = 7; i >= 0; i--)
   	{
-   		shiftOut(DATAPIN,CLKPIN,LSBFIRST, znaky[i + znak*8]);
+   		MYshiftOut(DATAPIN,CLKPIN,LSBFIRST, znaky[i + znak*8]);
    		//Serial.println(znaky[i+ znak*8], BIN);
   	}
 }
 
-void Matrix2D::display(String value_dir, String value_speed){
+void Matrix2D::display(String value){
 
-  Matrix2D::VALUE_DIR = value_dir;
-  Matrix2D::VALUE_SPEED = value_speed;
+  Matrix2D::VALUE = value;
+
+  pulsePin(RSTPIN, true);
   
   char buffer[10];
   // clear buffer
@@ -144,16 +149,54 @@ void Matrix2D::display(String value_dir, String value_speed){
   }
   
   // read data to display
-  int index = 0;
-  while (Serial.available() > 0 && index < DISPLAYNUM) {          //change this!!!
-    buffer[index++] = Serial.read();                              //and this
-  }
+  //int index = 0;
+  //for (int i = 0; i <= DISPLAYNUM; i++) {          //change this!!!
+    VALUE.toCharArray(buffer, 10);                              //and this
+  //}
   
   // display data
-  for (int i=5; i >=0; i--)
+  for (int i=DISPLAYNUM; i >=0; i--)
   {
     displayChar(buffer[i]);
   }
-  digitalWrite(LATPIN, HIGH);
-  digitalWrite(LATPIN, LOW);
+  pulsePin(LATPIN, false);
+}
+
+
+void Matrix2D::MYshiftOut(uint8_t DATAPIN, uint8_t CLKPIN, uint8_t bitOrder, uint8_t val){
+  uint8_t i;
+  
+  digitalWrite(CLKPIN, LOW);
+
+  for (i = 0; i < 8; i++)  {
+    if (bitOrder == LSBFIRST) {
+      digitalWrite(DATAPIN, val & 1);
+      val >>= 1;
+    } else {  
+      digitalWrite(DATAPIN, (val & 128) != 0);
+      val <<= 1;
+    }
+      
+    delayMicroseconds(WAIT_US); 
+    digitalWrite(CLKPIN, HIGH);
+    delayMicroseconds(WAIT_US); 
+    digitalWrite(CLKPIN, LOW); 
+    delayMicroseconds(WAIT_US); 
+  }
+}
+
+void Matrix2D::pulsePin(uint8_t pin, bool negative){
+  if (!negative) {
+    delayMicroseconds(WAIT_US);
+    digitalWrite(pin, HIGH);
+    delayMicroseconds(WAIT_US); 
+    digitalWrite(pin, LOW); 
+    delayMicroseconds(WAIT_US);          
+  } else {
+    delayMicroseconds(WAIT_US);
+    digitalWrite(pin, LOW);
+    delayMicroseconds(WAIT_US); 
+    digitalWrite(pin, HIGH); 
+    delayMicroseconds(WAIT_US);          
+  }
 }
