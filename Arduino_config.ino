@@ -19,12 +19,15 @@ HTTPClient http;
 
 void setup() {
 
-  Serial.begin(9600);
-  while (!Serial);
-
-  Connect_WiFi();
+  //Serial.begin(9600);
+  //while (!Serial);
 
   Matrix.begin(5, DATA_PIN, LAT_PIN, CLK_PIN, RST_PIN);
+  //delay(2000);
+  Matrix.display("HELLO");
+  delay(2000);
+
+  Connect_WiFi();
 
   //Serial.println(doc.ErrorStr());
 }
@@ -40,19 +43,19 @@ void loop() {
 
     if (statusCode > 0) 
     {                                                                 //checks if HTTP is comunicating
-      Serial.println("\nStatus:" + String(statusCode));             //prints status code 
+      //Serial.println("\nStatus:" + String(statusCode));             //prints status code 
       String wind_info = Parse_doc();
       Matrix.display(wind_info);
     }
     else {
-      Serial.println("Http error");                 //HTTP connection lost
-      Serial.println(String(statusCode));
-      Matrix.display("ERR2");
+      // Serial.println("Http error");                 //HTTP connection lost
+      // Serial.println(String(statusCode));
+      Matrix.display("ERR1  ");
     }
   } 
   else {
-    Serial.println("Connection lost");
-    Matrix.display("ERR1");
+    //Serial.println("Connection lost");
+    //Matrix.display("ERR1");
     delay(1000);
     Connect_WiFi();                                 //reconects to wifi
   }
@@ -61,17 +64,18 @@ void loop() {
 
 void Connect_WiFi() {
   WiFi.begin(ssid, password);                      //connects to WIFI
-  Serial.println("Connecting to WiFi");
+  //Serial.println("Connecting to WiFi");
+  Matrix.display("ConWF");
 
   while (WiFi.status() != WL_CONNECTED) {          //waiting for connection
-    Serial.print(".");
+    //Serial.print(".");
     delay(500);
   }
 
-  Serial.print("\nConnected to: ");
-  Serial.print(ssid);                              //prints which WIFI it conected to
-  Serial.print("\nIP adress: ");
-  Serial.print(WiFi.localIP());                    //prints its IP
+  // Serial.print("\nConnected to: ");
+  // Serial.print(ssid);                              //prints which WIFI it conected to
+  // Serial.print("\nIP adress: ");
+  //Serial.print(WiFi.localIP());                    //prints its IP
 }
 
 String  Parse_doc(){
@@ -80,6 +84,8 @@ String  Parse_doc(){
   String value_speed_buffer;
   String value_dir;
   String value_speed;
+
+  delay(1000);
 
   RAWxml = http.getString();                                      //gets XML data to string
 
@@ -105,19 +111,19 @@ String  Parse_doc(){
 
       if (value_dir.length() == 1)
       {
-        value_dir = "00" + value_dir;
+        value_dir = "  " + value_dir;
       }
       if (value_dir.length() == 2)
       {
-        value_dir = "0" + value_dir;
+        value_dir = " " + value_dir;
       }
       if (value_speed.length() == 1)
       {
-        value_speed = "0" + value_speed;
+        value_speed = " " + value_speed;
       }
           
       String value = value_dir + value_speed;
-      Serial.println(value);
+      //Serial.println(value);
       return(value);
     }
   }
