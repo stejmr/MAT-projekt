@@ -7,9 +7,13 @@ class Matrix2D {
 
     Matrix2D();
 
-    void begin(int DISPLAY_NUM, int DATA_PIN, int CLK_PIN, int LAT_PIN, int RST_PIN);
+    void begin(int Display_num, int DATA_PIN, int CLK_PIN, int LAT_PIN, int RST_PIN);
 
     void display(String value);
+
+    void clear();
+
+    void debug();
 
   private: 
   

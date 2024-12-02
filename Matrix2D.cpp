@@ -106,12 +106,12 @@ char znaky[] = {
 
 Matrix2D::Matrix2D(){};
 
-void Matrix2D::begin(int DISPLAY_NUM, int DATA_PIN, int CLK_PIN, int LAT_PIN, int RST_PIN){
+void Matrix2D::begin(int Display_num, int DATA_PIN, int CLK_PIN, int LAT_PIN, int RST_PIN){
   Matrix2D::DATAPIN = DATA_PIN;
   Matrix2D::CLKPIN = CLK_PIN;
   Matrix2D::LATPIN = LAT_PIN;
   Matrix2D::RSTPIN = RST_PIN;
-  Matrix2D::DISPLAYNUM = DISPLAY_NUM;
+  Matrix2D::DISPLAYNUM = Display_num - 1;
 
 
   pinMode(DATAPIN, OUTPUT);
@@ -121,19 +121,6 @@ void Matrix2D::begin(int DISPLAY_NUM, int DATA_PIN, int CLK_PIN, int LAT_PIN, in
 
 
   //Serial.println("Setup complete");
-}
-
-void Matrix2D::displayChar(char znak) {
-  if (znak == 0) return;
-	znak = znak - 32;
-  Serial.print(znak);
-	//Serial.print(znak, DEC);
-    
-	for(int i = 7; i >= 0; i--)
-  	{
-   		MYshiftOut(DATAPIN,CLKPIN,LSBFIRST, znaky[i + znak*8]);
-   		//Serial.println(znaky[i+ znak*8], BIN);
-  	}
 }
 
 void Matrix2D::display(String value){
@@ -149,10 +136,8 @@ void Matrix2D::display(String value){
   }
   
   // read data to display
-  //int index = 0;
-  //for (int i = 0; i <= DISPLAYNUM; i++) {          //change this!!!
-    VALUE.toCharArray(buffer, 10);                              //and this
-  //}
+
+    VALUE.toCharArray(buffer, 10);
   
   // display data
   for (int i=DISPLAYNUM; i >=0; i--)
@@ -162,6 +147,27 @@ void Matrix2D::display(String value){
   pulsePin(LATPIN, false);
 }
 
+void Matrix2D::clear(){
+  display("          ");
+}
+
+void Matrix2D::debug(){
+  display("{{{{{{{{{{");
+}
+
+
+void Matrix2D::displayChar(char znak) {
+  if (znak == 0) return;
+	znak = znak - 32;
+  //Serial.print(znak);
+	//Serial.print(znak, DEC);
+    
+	for(int i = 7; i >= 0; i--)
+  	{
+   		MYshiftOut(DATAPIN,CLKPIN,LSBFIRST, znaky[i + znak*8]);
+   		//Serial.println(znaky[i+ znak*8], BIN);
+  	}
+}
 
 void Matrix2D::MYshiftOut(uint8_t DATAPIN, uint8_t CLKPIN, uint8_t bitOrder, uint8_t val){
   uint8_t i;
