@@ -2,11 +2,25 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include "Matrix2D.h"
+#include <RotaryEncoder.h>
 
-#define DATA_PIN 2
-#define CLK_PIN 4
-#define LAT_PIN 3
-#define RST_PIN 5
+#define DATA_PIN 5
+#define CLK_PIN 7
+#define LAT_PIN 6
+#define RST_PIN 8
+
+#define EN_1 2
+#define EN_2 3
+#define EN_BTN 4
+
+#define ROTARYSTEPS 1
+#define ROTARYMIN 1
+#define ROTARYMAX 10
+
+int panel_num = 5;
+int lastPos = -1;
+int Display_num = 5;
+bool menu = 0;
 
 using namespace tinyxml2;
 
@@ -16,26 +30,25 @@ const char* password = "12345678";
 Matrix2D Matrix;
 XMLDocument doc;
 HTTPClient http;
+RotaryEncoder encoder(EN_1, EN_2);
 
 void setup() {
 
-  //Serial.begin(9600);
+  Serial.begin(9600);
   //while (!Serial);
+  pinMode(EN_BTN, INPUT);
 
-  Matrix.begin(5, DATA_PIN, LAT_PIN, CLK_PIN, RST_PIN);
+  Matrix.begin(Display_num, DATA_PIN, LAT_PIN, CLK_PIN, RST_PIN);
+  
+  //Matrix.display("HELLO");
   //delay(2000);
-  Matrix.display("HELLO");
-  delay(2000);
-
   Connect_WiFi();
-
-  //Serial.println(doc.ErrorStr());
 }
 
 
 void loop() {
   delay(1000);
-
+  
   if (WiFi.status() == WL_CONNECTED) {                                //checks if WIFI is connected
 
   http.begin("http://46.13.10.244:8005/xml.xml");                   //connects to meteostation
@@ -63,9 +76,10 @@ void loop() {
 }
 
 void Connect_WiFi() {
+
   WiFi.begin(ssid, password);                      //connects to WIFI
   //Serial.println("Connecting to WiFi");
-  Matrix.display("ConWF");
+  Matrix.display("ConWFi");
 
   while (WiFi.status() != WL_CONNECTED) {          //waiting for connection
     //Serial.print(".");
@@ -128,3 +142,37 @@ String  Parse_doc(){
     }
   }
 }
+
+void GetPanelNum(){
+
+  encoder.tick();
+
+  // get the current physical position and calc the logical position
+  int newPos = encoder.getPosition() * ROTARYSTEPS;
+
+  if (newPos < ROTARYMIN) {
+    encoder.setPosition(ROTARYMIN / ROTARYSTEPS);
+    newPos = ROTARYMIN;
+  } 
+  else if (newPos > ROTARYMAX) {
+    encoder.setPosition(ROTARYMAX / ROTARYSTEPS);
+    newPos = ROTARYMAX;
+  } // if
+
+  if (lastPos != newPos) {
+    Serial.print(newPos);
+    Serial.println();
+    lastPos = newPos;
+  } // if
+
+  Matrix.display(String(newPos));
+  
+  if (digitalRead(EN_BTN) == LOW){
+    Serial.println("sup");
+    Display_num = newPos;
+    menu = 0;
+    //Matrix.display(String(panel_num));
+    delay(300);
+  }
+}
+
