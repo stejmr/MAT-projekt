@@ -3,15 +3,18 @@
 #include <HTTPClient.h>
 #include "Matrix2D.h"
 #include <RotaryEncoder.h>
+#include <SD.h>
 
-#define DATA_PIN 5
-#define CLK_PIN 7
-#define LAT_PIN 6
-#define RST_PIN 8
+#define DATA_PIN 2
+#define CLK_PIN 4
+#define LAT_PIN 3
+#define RST_PIN 5
 
-#define EN_1 2
-#define EN_2 3
-#define EN_BTN 4
+#define EN_1 6
+#define EN_2 7
+#define EN_BTN 8
+
+#define CS 10
 
 #define ROTARYSTEPS 1
 #define ROTARYMIN 1
@@ -30,50 +33,49 @@ const char* password = "12345678";
 Matrix2D Matrix;
 XMLDocument doc;
 HTTPClient http;
+File myFile;
 RotaryEncoder encoder(EN_1, EN_2);
 
 void setup() {
 
   Serial.begin(9600);
   //while (!Serial);
-  pinMode(EN_BTN, INPUT);
+  pinMode(EN_BTN, INPUT_PULLUP);
 
   Matrix.begin(Display_num, DATA_PIN, LAT_PIN, CLK_PIN, RST_PIN);
+  Matrix.clear();
+
+  SD.begin(CS);
   
-  //Matrix.display("HELLO");
-  //delay(2000);
   Connect_WiFi();
 }
 
-
 void loop() {
   delay(1000);
-  
+
   if (WiFi.status() == WL_CONNECTED) {                                //checks if WIFI is connected
 
-  http.begin("http://46.13.10.244:8005/xml.xml");                   //connects to meteostation
-  int statusCode = http.GET(); 
+    http.begin("http://46.13.10.244:8005/xml.xml");                   //connects to meteostation
+    int statusCode = http.GET(); 
 
     if (statusCode > 0) 
     {                                                                 //checks if HTTP is comunicating
-      //Serial.println("\nStatus:" + String(statusCode));             //prints status code 
       String wind_info = Parse_doc();
       Matrix.display(wind_info);
+      
     }
     else {
-      // Serial.println("Http error");                 //HTTP connection lost
-      // Serial.println(String(statusCode));
       Matrix.display("ERR1  ");
     }
   } 
   else {
-    //Serial.println("Connection lost");
-    //Matrix.display("ERR1");
+    Matrix.display("LOST   ");
     delay(1000);
-    Connect_WiFi();                                 //reconects to wifi
+    Connect_WiFi();   //reconects to wifi                              
   }
   //Matrix.display();
 }
+
 
 void Connect_WiFi() {
 
@@ -83,7 +85,9 @@ void Connect_WiFi() {
 
   while (WiFi.status() != WL_CONNECTED) {          //waiting for connection
     //Serial.print(".");
-    delay(500);
+    //GoToMenu();
+    Matrix.display("ConWFi");
+    //delay(500);
   }
 
   // Serial.print("\nConnected to: ");
@@ -98,6 +102,8 @@ String  Parse_doc(){
   String value_speed_buffer;
   String value_dir;
   String value_speed;
+  String value_date;
+  String value_time;
 
   delay(1000);
 
@@ -105,8 +111,15 @@ String  Parse_doc(){
 
   doc.Parse(RAWxml.c_str());                                      //parses XML data converted to a char pointer
   //Serial.println("1");
-  XMLElement* SensorList = doc.FirstChildElement("wario")->FirstChildElement("input");    //navigates in XML document
+  XMLElement* attributeApproachElement = doc.FirstChildElement("wario");
   //Serial.println("2");
+  value_date = attributeApproachElement->Attribute( "date" );
+  value_time = attributeApproachElement->Attribute( "time" );
+  //Serial.println(value_date);
+  //Serial.println(value_time);
+  //Serial.println("2");
+  XMLElement* SensorList = doc.FirstChildElement("wario")->FirstChildElement("input");      //navigates in XML document
+  //Serial.println("3");
   for (tinyxml2::XMLElement* child = SensorList->FirstChildElement(); child != NULL; child = child->NextSiblingElement())     // reads every sensor element of XML
   {
     String type = child->FirstChildElement("type")->GetText();             //navigates to type in every sensor and saves their data
@@ -137,6 +150,20 @@ String  Parse_doc(){
       }
           
       String value = value_dir + value_speed;
+      myFile = SD.open("/test.txt", FILE_APPEND);
+      //Serial.print(value_date + " ");
+      //Serial.print(value_time + ":");
+      //Serial.print(value);
+      //Serial.print("\n");
+
+      if (myFile)
+      {
+        myFile.print(value_date + " ");
+        myFile.print(value_time + ":");
+        myFile.print(value);
+        myFile.print("\n");
+        myFile.close();
+      }
       //Serial.println(value);
       return(value);
     }
@@ -171,8 +198,18 @@ void GetPanelNum(){
     Serial.println("sup");
     Display_num = newPos;
     menu = 0;
-    //Matrix.display(String(panel_num));
+    Matrix.begin(Display_num, DATA_PIN, LAT_PIN, CLK_PIN, RST_PIN);
     delay(300);
   }
 }
 
+void GoToMenu(){
+  if (digitalRead(EN_BTN) == LOW){
+    menu = 1;
+    delay(300);
+  }
+
+  while(menu == 1){
+  GetPanelNum();
+  }
+}
