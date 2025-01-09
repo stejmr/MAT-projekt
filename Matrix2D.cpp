@@ -135,7 +135,7 @@ void Matrix2D::display(String value){
   	buffer[i] = 32;
   }
   
-  // read data to display
+  // change data type to array
 
     VALUE.toCharArray(buffer, 10);
   

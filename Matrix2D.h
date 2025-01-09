@@ -25,7 +25,7 @@ class Matrix2D {
     String VALUE;
 
     int DISPLAYNUM;
-    int WAIT_US = 100;
+    int WAIT_US;
 
     void MYshiftOut(uint8_t DATAPIN, uint8_t CLKPIN, uint8_t bitOrder, uint8_t val);
 

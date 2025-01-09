@@ -1,29 +1,17 @@
 #include <tinyxml2.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include "Matrix2D.h"
-#include <RotaryEncoder.h>
 #include <SD.h>
+#include "Matrix2D.h"
 
 #define DATA_PIN 2
 #define CLK_PIN 4
 #define LAT_PIN 3
 #define RST_PIN 5
 
-#define EN_1 6
-#define EN_2 7
-#define EN_BTN 8
+#define DISPLAY_NUM 10
 
 #define CS 10
-
-#define ROTARYSTEPS 1
-#define ROTARYMIN 1
-#define ROTARYMAX 10
-
-int panel_num = 5;
-int lastPos = -1;
-int Display_num = 5;
-bool menu = 0;
 
 using namespace tinyxml2;
 
@@ -34,15 +22,13 @@ Matrix2D Matrix;
 XMLDocument doc;
 HTTPClient http;
 File myFile;
-RotaryEncoder encoder(EN_1, EN_2);
 
 void setup() {
 
   Serial.begin(9600);
   //while (!Serial);
-  pinMode(EN_BTN, INPUT_PULLUP);
 
-  Matrix.begin(Display_num, DATA_PIN, LAT_PIN, CLK_PIN, RST_PIN);
+  Matrix.begin(DISPLAY_NUM, DATA_PIN, LAT_PIN, CLK_PIN, RST_PIN);
   Matrix.clear();
 
   SD.begin(CS);
@@ -55,7 +41,8 @@ void loop() {
 
   if (WiFi.status() == WL_CONNECTED) {                                //checks if WIFI is connected
 
-    http.begin("http://46.13.10.244:8005/xml.xml");                   //connects to meteostation
+    //http.begin("http://46.13.10.244:8005/xml.xml");                   //connects to meteostation CSB
+    http.begin("http://109.238.218.231:44444/xml.xml");                 //connects to meteostation LKUL through a tunnel
     int statusCode = http.GET(); 
 
     if (statusCode > 0) 
@@ -150,66 +137,23 @@ String  Parse_doc(){
       }
           
       String value = value_dir + value_speed;
-      myFile = SD.open("/test.txt", FILE_APPEND);
-      //Serial.print(value_date + " ");
+      myFile = SD.open("/meteo.txt", FILE_APPEND);
+      Serial.print(value_date + " ");
       //Serial.print(value_time + ":");
       //Serial.print(value);
       //Serial.print("\n");
 
       if (myFile)
       {
+        Serial.print("sup");
         myFile.print(value_date + " ");
-        myFile.print(value_time + ":");
+        myFile.print(value_time + ": ");
         myFile.print(value);
         myFile.print("\n");
         myFile.close();
       }
-      //Serial.println(value);
+      Serial.println(value);
       return(value);
     }
-  }
-}
-
-void GetPanelNum(){
-
-  encoder.tick();
-
-  // get the current physical position and calc the logical position
-  int newPos = encoder.getPosition() * ROTARYSTEPS;
-
-  if (newPos < ROTARYMIN) {
-    encoder.setPosition(ROTARYMIN / ROTARYSTEPS);
-    newPos = ROTARYMIN;
-  } 
-  else if (newPos > ROTARYMAX) {
-    encoder.setPosition(ROTARYMAX / ROTARYSTEPS);
-    newPos = ROTARYMAX;
-  } // if
-
-  if (lastPos != newPos) {
-    Serial.print(newPos);
-    Serial.println();
-    lastPos = newPos;
-  } // if
-
-  Matrix.display(String(newPos));
-  
-  if (digitalRead(EN_BTN) == LOW){
-    Serial.println("sup");
-    Display_num = newPos;
-    menu = 0;
-    Matrix.begin(Display_num, DATA_PIN, LAT_PIN, CLK_PIN, RST_PIN);
-    delay(300);
-  }
-}
-
-void GoToMenu(){
-  if (digitalRead(EN_BTN) == LOW){
-    menu = 1;
-    delay(300);
-  }
-
-  while(menu == 1){
-  GetPanelNum();
   }
 }
