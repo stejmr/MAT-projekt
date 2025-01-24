@@ -2,6 +2,7 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <SD.h>
+#include <FileConfig.h>
 #include "Matrix2D.h"
 
 #define DATA_PIN 2
@@ -19,7 +20,8 @@ byte line;
 
 String SSID;
 String PASS;
-String HTTP;
+char* HTTP;
+int DIS_NUM;
 
 const int DISPLAY_NUM = 10;
 
@@ -28,40 +30,19 @@ Matrix2D Matrix;
 XMLDocument doc;
 HTTPClient http;
 File myFile;
-
+FileConfig cfg;
 
 void setup() {
 
   Serial.begin(9600);
   while (!Serial);
 
-  Matrix.begin(DISPLAY_NUM, DATA_PIN, LAT_PIN, CLK_PIN, RST_PIN);
-  Matrix.clear();
-
   SD.begin(CS);
 
-  myFile = SD.open("/config.txt");
+  GetConfig();
 
-  if (myFile)
-  {
-    while (myFile.available())
-    {
-      char c = myFile.read();
-      if (isPrintable(c))
-      {
-        parameter.concat(c);
-      }
-      else if (c == '\n')
-      {
-        //        Serial.println(parameter);
-        theArray[line] = parameter;
-        parameter = "";
-        line++;
-      }
-    }
-  }
-  myFile.close();
-  getConfig();
+  Matrix.begin(DIS_NUM, DATA_PIN, LAT_PIN, CLK_PIN, RST_PIN);
+  Matrix.clear();
 
   Connect_WiFi();
 }
@@ -71,15 +52,14 @@ void loop(){
 
   if (WiFi.status() == WL_CONNECTED) {                                //checks if WIFI is connected
 
-    http.begin(HTTP);                   //connects to meteostation CSB
+    http.begin(HTTP);                   //connects to meteostation
     //http.begin("http://109.238.218.231:44444/xml.xml");                 //connects to meteostation LKUL through a tunnel
     int statusCode = http.GET(); 
 
-    if (statusCode = 200) 
-    {                                                                 //checks if HTTP is comunicating
+    if (statusCode >= 200 && statusCode < 299) {                                                //checks if HTTP is comunicating
+      
       String wind_info = Parse_doc();
       Matrix.display(wind_info);
-      
     }
     else {
       Matrix.display("ERR1  ");
@@ -97,7 +77,7 @@ void Connect_WiFi(){
 
   WiFi.begin(SSID, PASS);                      //connects to WIFI
   //Serial.println("Connecting to WiFi");
-  Serial.println(WiFi.SSID());
+  //Serial.println(WiFi.SSID());
   Matrix.display("ConWFi");
 
   while (WiFi.status() != WL_CONNECTED) {          //waiting for connection
@@ -165,14 +145,14 @@ String  Parse_doc(){
           
       String value = value_dir + value_speed;
       myFile = SD.open("/meteo.txt", FILE_APPEND);
-      Serial.print(value_date + " ");
+      //Serial.print(value_date + " ");
       //Serial.print(value_time + ":");
       //Serial.print(value);
       //Serial.print("\n");
 
       if (myFile)
       {
-        Serial.print("sup");
+        //Serial.print("sup");
         myFile.print(value_date + " ");
         myFile.print(value_time + ": ");
         myFile.print(value);
@@ -185,21 +165,34 @@ String  Parse_doc(){
   }
 }
 
-void getConfig(){
-  
-  
-  SSID = theArray[0];
-  PASS = theArray[1];
-  HTTP = theArray[2];
-  
-  SSID = SSID.substring(7,SSID.length()-1);
-  PASS = PASS.substring(11,PASS.length()-1);
-  HTTP = HTTP.substring(7,HTTP.length()-1);
+void GetConfig(){
 
-  //ssid = SSID.c_str();
-  //password = PASS.c_str();
+  int maxLineLength = 40;
+  int maxSectionLength = 20;
+  bool ignoreCase = true;
+  bool ignoreError = true;
 
-  //Serial.println(SSID);
-  // Serial.println(PASS);
-  // Serial.println(HTTP);
+  fs::FS &fs = SD;
+  
+  if (cfg.begin(fs, "/config.cfg", maxLineLength, maxSectionLength, ignoreCase, ignoreError)) {
+    while (cfg.readNextSetting()) {
+      if (cfg.nameIs("SSID")) {
+        SSID = cfg.copyValue();
+        Serial.printf("%s\n", SSID);
+      }
+      else if (cfg.nameIs("PASSWORD")) {
+        PASS = cfg.copyValue();
+        Serial.printf("%s\n", PASS);
+      }
+      else if (cfg.nameIs("HTTP")) {
+        HTTP = cfg.copyValue();
+        Serial.printf("%s\n", HTTP);
+      }
+      else if (cfg.nameIs("DIS_NUM")) {
+        DIS_NUM = cfg.getIntValue();
+        Serial.printf("%i\n", DIS_NUM);
+      }
+    }
+    cfg.end();
+  }
 }
