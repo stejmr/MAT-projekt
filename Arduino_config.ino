@@ -23,9 +23,8 @@ String PASS;
 char* HTTP;
 int DIS_NUM;
 
-const int DISPLAY_NUM = 10;
-
 using namespace tinyxml2;
+
 Matrix2D Matrix;
 XMLDocument doc;
 HTTPClient http;
@@ -35,14 +34,22 @@ FileConfig cfg;
 void setup() {
 
   Serial.begin(9600);
-  while (!Serial);
+  //while (!Serial);
 
-  SD.begin(CS);
+  Matrix.begin(10, DATA_PIN, LAT_PIN, CLK_PIN, RST_PIN);
+  Matrix.clear();
+
+  Matrix.debug();
+  delay(1000);
+  Matrix.clear();
+
+  if (!SD.begin(CS))
+  {
+    Matrix.display("SD ERR");
+    while(1);
+  }
 
   GetConfig();
-
-  Matrix.begin(DIS_NUM, DATA_PIN, LAT_PIN, CLK_PIN, RST_PIN);
-  Matrix.clear();
 
   Connect_WiFi();
 }
@@ -92,7 +99,7 @@ void Connect_WiFi(){
   //Serial.print(WiFi.localIP());                    //prints its IP
 }
 
-String  Parse_doc(){
+String Parse_doc(){
   String RAWxml;
   String value_dir_buffer;
   String value_speed_buffer;
@@ -191,6 +198,7 @@ void GetConfig(){
       else if (cfg.nameIs("DIS_NUM")) {
         DIS_NUM = cfg.getIntValue();
         Serial.printf("%i\n", DIS_NUM);
+        Matrix.begin(DIS_NUM, DATA_PIN, LAT_PIN, CLK_PIN, RST_PIN);
       }
     }
     cfg.end();
